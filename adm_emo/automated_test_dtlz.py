@@ -100,11 +100,32 @@ for gen in num_gen_per_iter:
                 ]
 
                 # problem_nameR = problem_name.lower()
+                reference_vectors = ReferenceVectors(lattice_resolution, n_obj)
+                base = baseADM(cf, reference_vectors)
 
+                response = gp.generateRP4learning(base)
+
+                # Reference point generation for the next iteration
+                pref_int_rvea.response = pd.DataFrame(
+                    [response], columns=pref_int_rvea.content["dimensions_data"].columns
+                )
+                pref_int_nsga.response = pd.DataFrame(
+                    [response], columns=pref_int_nsga.content["dimensions_data"].columns
+                )
+
+                _, pref_int_rvea = int_rvea.iterate(pref_int_rvea)
+                _, pref_int_nsga = int_nsga.iterate(pref_int_nsga)
+
+                cf = generate_composite_front(
+                    cf, int_rvea.population.objectives, int_nsga.population.objectives
+                )
+
+                # R-metric calculation
                 problemR = get_problem(problem_name.lower(), n_var, n_obj)
                 ref_dirs = get_reference_directions(
                     "das-dennis", n_obj, n_partitions=12
                 )
+
                 ref_point = response.reshape(1, n_obj)
                 rmetric = rm.RMetric(
                     problemR, ref_point, pf=problemR.pareto_front(ref_dirs)
@@ -130,26 +151,5 @@ for gen in num_gen_per_iter:
                 ]
 
                 data = data.append(data_row, ignore_index=1)
-
-                reference_vectors = ReferenceVectors(lattice_resolution, n_obj)
-                base = baseADM(cf, reference_vectors)
-
-                response = gp.generateRP4learning(base)
-
-                # Reference point generation for the next iteration
-                pref_int_rvea.response = pd.DataFrame(
-                    [response], columns=pref_int_rvea.content["dimensions_data"].columns
-                )
-                pref_int_nsga.response = pd.DataFrame(
-                    [response], columns=pref_int_nsga.content["dimensions_data"].columns
-                )
-
-                _, pref_int_rvea = int_rvea.iterate(pref_int_rvea)
-                _, pref_int_nsga = int_nsga.iterate(pref_int_nsga)
-
-                cf = generate_composite_front(
-                    cf, int_rvea.population.objectives, int_nsga.population.objectives
-                )
-                print(response)
 
 data.to_csv("./results/data.csv", index=False)
