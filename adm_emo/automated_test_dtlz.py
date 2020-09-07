@@ -31,9 +31,9 @@ num_gen_per_iter = [50]
 algorithms = ["iRVEA", "iNSGAIII"]
 column_names = (
     ["problem", "num_obj", "iteration", "num_gens"]
-    + [algorithm + "RP" for algorithm in algorithms]
-    + [algorithm + "R_IGD" for algorithm in algorithms]
-    + [algorithm + "R_HV" for algorithm in algorithms]
+    + [algorithm + "_RP" for algorithm in algorithms]
+    + [algorithm + "_R_IGD" for algorithm in algorithms]
+    + [algorithm + "_R_HV" for algorithm in algorithms]
 )
 
 excess_columns = [
