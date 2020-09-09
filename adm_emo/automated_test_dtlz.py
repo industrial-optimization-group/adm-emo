@@ -13,6 +13,7 @@ from desdeo_emo.EAs.NSGAIII import NSGAIII
 
 from pymoo.factory import get_problem, get_reference_directions
 import rmetric as rm
+from sklearn.preprocessing import Normalizer
 
 # from desdeo_tools.scalarization.ASF import PointMethodASF as asf
 
@@ -37,9 +38,9 @@ column_names = (
 )
 
 excess_columns = [
-    "RP",
-    "R_IGD",
-    "R_HV",
+    "_RP",
+    "_R_IGD",
+    "_R_HV",
 ]
 
 data = pd.DataFrame(columns=column_names)
@@ -59,8 +60,6 @@ for gen in num_gen_per_iter:
             problem.nadir = abs(np.random.normal(size=n_obj, scale=0.15)) + 1
 
             true_nadir = np.asarray([1] * n_obj)
-
-            # scalar = asf(ideal=problem.ideal, nadir=true_nadir)
 
             # interactive
             int_rvea = RVEA(problem=problem, interact=True, n_gen_per_iter=gen)
@@ -104,7 +103,7 @@ for gen in num_gen_per_iter:
                 base = baseADM(cf, reference_vectors)
 
                 response = gp.generateRP4learning(base)
-
+                # print(response)
                 # Reference point generation for the next iteration
                 pref_int_rvea.response = pd.DataFrame(
                     [response], columns=pref_int_rvea.content["dimensions_data"].columns
@@ -131,13 +130,89 @@ for gen in num_gen_per_iter:
                     problemR, ref_point, pf=problemR.pareto_front(ref_dirs)
                 )
 
-                rigd_irvea, rhv_irvea = rmetric.calc(
-                    int_rvea.population.objectives, others=cf
+                # normalize solutions before sending r-metric
+
+                rvea_transformer = Normalizer().fit(int_rvea.population.objectives)
+                norm_rvea = rvea_transformer.transform(int_rvea.population.objectives)
+
+                nsga_transformer = Normalizer().fit(int_nsga.population.objectives)
+                norm_nsga = nsga_transformer.transform(int_nsga.population.objectives)
+
+                cf_transformer = Normalizer().fit(cf)
+                norm_cf = cf_transformer.transform(cf)
+
+                rigd_irvea, rhv_irvea = rmetric.calc(norm_rvea, others=norm_cf)
+                rigd_insga, rhv_insga = rmetric.calc(norm_nsga, others=norm_cf)
+
+                data_row[["iRVEA" + excess_col for excess_col in excess_columns]] = [
+                    response,
+                    rigd_irvea,
+                    rhv_irvea,
+                ]
+                data_row[["iNSGAIII" + excess_col for excess_col in excess_columns]] = [
+                    response,
+                    rigd_insga,
+                    rhv_insga,
+                ]
+
+                data = data.append(data_row, ignore_index=1)
+
+            # Decision phase
+            max_assigned_vector = gp.get_max_assigned_vector(base.assigned_vectors)
+
+            for i in range(D):
+                data_row[["problem", "num_obj", "iteration", "num_gens"]] = [
+                    problem_name,
+                    n_obj,
+                    L + i + 1,
+                    gen,
+                ]
+
+                # problem_nameR = problem_name.lower()
+                reference_vectors = ReferenceVectors(lattice_resolution, n_obj)
+                base = baseADM(cf, reference_vectors)
+
+                response = gp.generateRP4decision(base, max_assigned_vector)
+                # print(response)
+                # Reference point generation for the next iteration
+                pref_int_rvea.response = pd.DataFrame(
+                    [response], columns=pref_int_rvea.content["dimensions_data"].columns
+                )
+                pref_int_nsga.response = pd.DataFrame(
+                    [response], columns=pref_int_nsga.content["dimensions_data"].columns
                 )
 
-                rigd_insga, rhv_insga = rmetric.calc(
-                    int_nsga.population.objectives, others=cf
+                _, pref_int_rvea = int_rvea.iterate(pref_int_rvea)
+                _, pref_int_nsga = int_nsga.iterate(pref_int_nsga)
+
+                cf = generate_composite_front(
+                    cf, int_rvea.population.objectives, int_nsga.population.objectives
                 )
+
+                # R-metric calculation
+                problemR = get_problem(problem_name.lower(), n_var, n_obj)
+                ref_dirs = get_reference_directions(
+                    "das-dennis", n_obj, n_partitions=12
+                )
+
+                ref_point = response.reshape(1, n_obj)
+                rmetric = rm.RMetric(
+                    problemR, ref_point, pf=problemR.pareto_front(ref_dirs)
+                )
+
+                # normalize solutions before sending r-metric
+
+                rvea_transformer = Normalizer().fit(int_rvea.population.objectives)
+                norm_rvea = rvea_transformer.transform(int_rvea.population.objectives)
+
+                nsga_transformer = Normalizer().fit(int_nsga.population.objectives)
+                norm_nsga = nsga_transformer.transform(int_nsga.population.objectives)
+
+                cf_transformer = Normalizer().fit(cf)
+                norm_cf = cf_transformer.transform(cf)
+
+                rigd_irvea, rhv_irvea = rmetric.calc(norm_rvea, others=norm_cf)
+                rigd_insga, rhv_insga = rmetric.calc(norm_nsga, others=norm_cf)
 
                 data_row[["iRVEA" + excess_col for excess_col in excess_columns]] = [
                     response,
