@@ -14,6 +14,9 @@ from desdeo_emo.EAs.NSGAIII import NSGAIII
 from pymoo.factory import get_problem, get_reference_directions
 import rmetric as rm
 from sklearn.preprocessing import Normalizer
+from pymoo.configuration import Configuration
+
+Configuration.show_compile_hint = False
 
 # from desdeo_tools.scalarization.ASF import PointMethodASF as asf
 
@@ -27,7 +30,7 @@ n_objs = np.asarray([3])
 K = 10
 n_vars = K + n_objs - 1
 
-num_gen_per_iter = [100]
+num_gen_per_iter = [50]
 
 algorithms = ["iRVEA", "iNSGAIII"]
 column_names = (
@@ -65,6 +68,7 @@ for gen in num_gen_per_iter:
 
             # initial reference point
             response = np.random.rand(n_obj)
+            fig_rp = go.Figure()
 
             # run algorithms once with the randomly generated reference point
             _, pref_int_rvea = int_rvea.requests()
@@ -83,10 +87,15 @@ for gen in num_gen_per_iter:
                 int_rvea.population.objectives, int_nsga.population.objectives
             )
 
+            problemR = get_problem(problem_name.lower(), n_var, n_obj)
+            ref_dirs = get_reference_directions("das-dennis", n_obj, n_partitions=12)
+
             # ADM parameters
-            L = 4
+            L = 15
             D = 3
-            lattice_resolution = 4
+            all_rps = np.empty(shape=(L + D, n_obj), dtype="object")
+
+            lattice_resolution = 5
             reference_vectors = ReferenceVectors(lattice_resolution, n_obj)
 
             for i in range(L):
@@ -102,6 +111,7 @@ for gen in num_gen_per_iter:
 
                 response = gp.generateRP4learning(base)
                 # print(response)
+
                 data_row["reference_point"] = [
                     response,
                 ]
@@ -122,14 +132,14 @@ for gen in num_gen_per_iter:
                 )
 
                 # R-metric calculation
-                problemR = get_problem(problem_name.lower(), n_var, n_obj)
-                ref_dirs = get_reference_directions(
-                    "das-dennis", n_obj, n_partitions=12
-                )
-
                 ref_point = response.reshape(1, n_obj)
+
+                rp_transformer = Normalizer().fit(ref_point)
+                norm_rp = rp_transformer.transform(ref_point)
+                all_rps[i] = norm_rp
+
                 rmetric = rm.RMetric(
-                    problemR, ref_point, pf=problemR.pareto_front(ref_dirs)
+                    problemR, norm_rp, pf=problemR.pareto_front(ref_dirs)
                 )
 
                 # normalize solutions before sending r-metric
@@ -143,8 +153,8 @@ for gen in num_gen_per_iter:
                 cf_transformer = Normalizer().fit(cf)
                 norm_cf = cf_transformer.transform(cf)
 
-                rigd_irvea, rhv_irvea = rmetric.calc(norm_rvea, others=norm_cf)
-                rigd_insga, rhv_insga = rmetric.calc(norm_nsga, others=norm_cf)
+                rigd_irvea, rhv_irvea = rmetric.calc(norm_rvea, others=norm_nsga)
+                rigd_insga, rhv_insga = rmetric.calc(norm_nsga, others=norm_rvea)
 
                 data_row[["iRVEA" + excess_col for excess_col in excess_columns]] = [
                     rigd_irvea,
@@ -181,6 +191,7 @@ for gen in num_gen_per_iter:
 
                 response = gp.generateRP4decision(base, max_assigned_vector)
                 # print(response)
+
                 data_row["reference_point"] = [
                     response,
                 ]
@@ -201,14 +212,14 @@ for gen in num_gen_per_iter:
                 )
 
                 # R-metric calculation
-                problemR = get_problem(problem_name.lower(), n_var, n_obj)
-                ref_dirs = get_reference_directions(
-                    "das-dennis", n_obj, n_partitions=12
-                )
-
                 ref_point = response.reshape(1, n_obj)
+
+                rp_transformer = Normalizer().fit(ref_point)
+                norm_rp = rp_transformer.transform(ref_point)
+                all_rps[L + i] = norm_rp
+
                 rmetric = rm.RMetric(
-                    problemR, ref_point, pf=problemR.pareto_front(ref_dirs)
+                    problemR, norm_rp, pf=problemR.pareto_front(ref_dirs)
                 )
 
                 # normalize solutions before sending r-metric
@@ -222,8 +233,8 @@ for gen in num_gen_per_iter:
                 cf_transformer = Normalizer().fit(cf)
                 norm_cf = cf_transformer.transform(cf)
 
-                rigd_irvea, rhv_irvea = rmetric.calc(norm_rvea, others=norm_cf)
-                rigd_insga, rhv_insga = rmetric.calc(norm_nsga, others=norm_cf)
+                rigd_irvea, rhv_irvea = rmetric.calc(norm_rvea, others=norm_nsga)
+                rigd_insga, rhv_insga = rmetric.calc(norm_nsga, others=norm_rvea)
 
                 data_row[["iRVEA" + excess_col for excess_col in excess_columns]] = [
                     rigd_irvea,
@@ -243,7 +254,17 @@ for gen in num_gen_per_iter:
                 fig.write_html(
                     f"./results/iNSGA/" f"iNSGA_{problem_name}_iteration_{L+i+1}.html"
                 )
+            fig_rp.add_trace(
+                go.Scatter3d(
+                    x=all_rps[:, 0],
+                    y=all_rps[:, 1],
+                    z=all_rps[:, 2],
+                    name="Reference points",
+                    mode="lines+markers",
+                    marker_size=5,
+                )
+            )
+            fig_rp.write_html(f"./results/" f"RPs_{problem_name}_{gen}.html")
             fig = visualize_3D_front_rvs(base.normalized_front, reference_vectors)
-            fig.write_html(f"./results/" f"cf_{problem_name}.html")
-
+            fig.write_html(f"./results/" f"cf_{problem_name}_{gen}.html")
 data.to_csv("./results/data.csv", index=False)
