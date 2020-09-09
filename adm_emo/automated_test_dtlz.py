@@ -87,6 +87,7 @@ for gen in num_gen_per_iter:
             L = 4
             D = 3
             lattice_resolution = 4
+            reference_vectors = ReferenceVectors(lattice_resolution, n_obj)
 
             for i in range(L):
                 data_row[["problem", "num_obj", "iteration", "num_gens"]] = [
@@ -97,7 +98,6 @@ for gen in num_gen_per_iter:
                 ]
 
                 # problem_nameR = problem_name.lower()
-                reference_vectors = ReferenceVectors(lattice_resolution, n_obj)
                 base = baseADM(cf, reference_vectors)
 
                 response = gp.generateRP4learning(base)
@@ -106,8 +106,6 @@ for gen in num_gen_per_iter:
                     response,
                 ]
 
-                fig = visualize_3D_front_rp(cf, response)
-                fig.write_html(f"./results/" f"{problem_name}_iteration_{i+1}.html")
                 # Reference point generation for the next iteration
                 pref_int_rvea.response = pd.DataFrame(
                     [response], columns=pref_int_rvea.content["dimensions_data"].columns
@@ -158,6 +156,14 @@ for gen in num_gen_per_iter:
                 ]
 
                 data = data.append(data_row, ignore_index=1)
+                fig = visualize_3D_front_rp(int_rvea.population.objectives, response)
+                fig.write_html(
+                    f"./results/iRVEA/" f"iRVEA_{problem_name}_iteration_{i+1}.html"
+                )
+                fig = visualize_3D_front_rp(int_nsga.population.objectives, response)
+                fig.write_html(
+                    f"./results/iNSGA/" f"iNSGA_{problem_name}_iteration_{i+1}.html"
+                )
 
             # Decision phase
             max_assigned_vector = gp.get_max_assigned_vector(base.assigned_vectors)
@@ -171,7 +177,6 @@ for gen in num_gen_per_iter:
                 ]
 
                 # problem_nameR = problem_name.lower()
-                reference_vectors = ReferenceVectors(lattice_resolution, n_obj)
                 base = baseADM(cf, reference_vectors)
 
                 response = gp.generateRP4decision(base, max_assigned_vector)
@@ -179,8 +184,7 @@ for gen in num_gen_per_iter:
                 data_row["reference_point"] = [
                     response,
                 ]
-                fig = visualize_3D_front_rp(cf, response)
-                fig.write_html(f"./results/" f"{problem_name}_iteration_{L+i+1}.html")
+
                 # Reference point generation for the next iteration
                 pref_int_rvea.response = pd.DataFrame(
                     [response], columns=pref_int_rvea.content["dimensions_data"].columns
@@ -231,5 +235,15 @@ for gen in num_gen_per_iter:
                 ]
 
                 data = data.append(data_row, ignore_index=1)
+                fig = visualize_3D_front_rp(int_rvea.population.objectives, response)
+                fig.write_html(
+                    f"./results/iRVEA/" f"iRVEA_{problem_name}_iteration_{L+i+1}.html"
+                )
+                fig = visualize_3D_front_rp(int_nsga.population.objectives, response)
+                fig.write_html(
+                    f"./results/iNSGA/" f"iNSGA_{problem_name}_iteration_{L+i+1}.html"
+                )
+            fig = visualize_3D_front_rvs(base.normalized_front, reference_vectors)
+            fig.write_html(f"./results/" f"cf_{problem_name}.html")
 
 data.to_csv("./results/data.csv", index=False)
