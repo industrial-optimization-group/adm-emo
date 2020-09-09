@@ -105,6 +105,9 @@ for gen in num_gen_per_iter:
                 data_row["reference_point"] = [
                     response,
                 ]
+
+                fig = visualize_3D_front_rp(cf, response)
+                fig.write_html(f"./results/" f"{problem_name}_iteration_{i+1}.html")
                 # Reference point generation for the next iteration
                 pref_int_rvea.response = pd.DataFrame(
                     [response], columns=pref_int_rvea.content["dimensions_data"].columns
@@ -176,6 +179,8 @@ for gen in num_gen_per_iter:
                 data_row["reference_point"] = [
                     response,
                 ]
+                fig = visualize_3D_front_rp(cf, response)
+                fig.write_html(f"./results/" f"{problem_name}_iteration_{L+i+1}.html")
                 # Reference point generation for the next iteration
                 pref_int_rvea.response = pd.DataFrame(
                     [response], columns=pref_int_rvea.content["dimensions_data"].columns
