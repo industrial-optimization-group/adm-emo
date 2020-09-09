@@ -27,18 +27,16 @@ n_objs = np.asarray([3])
 K = 10
 n_vars = K + n_objs - 1
 
-num_gen_per_iter = [50]
+num_gen_per_iter = [100]
 
 algorithms = ["iRVEA", "iNSGAIII"]
 column_names = (
-    ["problem", "num_obj", "iteration", "num_gens"]
-    + [algorithm + "_RP" for algorithm in algorithms]
+    ["problem", "num_obj", "iteration", "num_gens", "reference_point"]
     + [algorithm + "_R_IGD" for algorithm in algorithms]
     + [algorithm + "_R_HV" for algorithm in algorithms]
 )
 
 excess_columns = [
-    "_RP",
     "_R_IGD",
     "_R_HV",
 ]
@@ -104,6 +102,9 @@ for gen in num_gen_per_iter:
 
                 response = gp.generateRP4learning(base)
                 # print(response)
+                data_row["reference_point"] = [
+                    response,
+                ]
                 # Reference point generation for the next iteration
                 pref_int_rvea.response = pd.DataFrame(
                     [response], columns=pref_int_rvea.content["dimensions_data"].columns
@@ -145,12 +146,10 @@ for gen in num_gen_per_iter:
                 rigd_insga, rhv_insga = rmetric.calc(norm_nsga, others=norm_cf)
 
                 data_row[["iRVEA" + excess_col for excess_col in excess_columns]] = [
-                    response,
                     rigd_irvea,
                     rhv_irvea,
                 ]
                 data_row[["iNSGAIII" + excess_col for excess_col in excess_columns]] = [
-                    response,
                     rigd_insga,
                     rhv_insga,
                 ]
@@ -174,6 +173,9 @@ for gen in num_gen_per_iter:
 
                 response = gp.generateRP4decision(base, max_assigned_vector)
                 # print(response)
+                data_row["reference_point"] = [
+                    response,
+                ]
                 # Reference point generation for the next iteration
                 pref_int_rvea.response = pd.DataFrame(
                     [response], columns=pref_int_rvea.content["dimensions_data"].columns
@@ -215,12 +217,10 @@ for gen in num_gen_per_iter:
                 rigd_insga, rhv_insga = rmetric.calc(norm_nsga, others=norm_cf)
 
                 data_row[["iRVEA" + excess_col for excess_col in excess_columns]] = [
-                    response,
                     rigd_irvea,
                     rhv_irvea,
                 ]
                 data_row[["iNSGAIII" + excess_col for excess_col in excess_columns]] = [
-                    response,
                     rigd_insga,
                     rhv_insga,
                 ]
