@@ -7,7 +7,7 @@ from pymoo.performance_indicator.igd import IGD
 
 
 class RMetric(Indicator):
-    def __init__(self, problem, ref_points, w=None, delta=0.2, pf=None):
+    def __init__(self, problem, ref_points, w=None, delta=0.3, pf=None):
         """
 
         Parameters
