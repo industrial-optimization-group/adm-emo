@@ -37,8 +37,8 @@ def generateRP4learning(base: baseADM):
 
     # Create the reference point
     reference_point = distance_selected * base.vectors.values[min_assigned_vector[0]]
-    # reference_point = np.squeeze(reference_point + ideal_cf)
-    reference_point = reference_point + ideal_cf
+    reference_point = np.squeeze(reference_point + ideal_cf)
+    # reference_point = reference_point + ideal_cf
     return reference_point
 
 
@@ -79,6 +79,6 @@ def generateRP4decision(base: baseADM, max_assigned_vector):
 
     # Create the reference point
     reference_point = distance_selected * base.vectors.values[max_assigned_vector[0]]
-    # reference_point = np.squeeze(reference_point + ideal_cf)
-    reference_point = reference_point + ideal_cf
+    reference_point = np.squeeze(reference_point + ideal_cf)
+    # reference_point = reference_point + ideal_cf
     return reference_point
