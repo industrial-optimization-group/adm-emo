@@ -25,12 +25,12 @@ Configuration.show_compile_hint = False
 
 # problem_names = ["DTLZ2", "DTLZ3", "DTLZ4"]
 problem_names = ["DTLZ1", "DTLZ2", "DTLZ3", "DTLZ4"]
-# n_objs = np.asarray([3, 4, 5, 6, 7, 8, 9])
-n_objs = np.asarray([3])
+n_objs = np.asarray([3, 4, 5, 6, 7, 8, 9])
+# n_objs = np.asarray([3])
 K = 10
 n_vars = K + n_objs - 1
 
-num_gen_per_iter = [50]
+num_gen_per_iter = [100]
 
 algorithms = ["iRVEA", "iNSGAIII"]
 column_names = (
@@ -68,7 +68,7 @@ for gen in num_gen_per_iter:
 
             # initial reference point
             response = np.random.rand(n_obj)
-            fig_rp = go.Figure()
+            # fig_rp = go.Figure()
 
             # run algorithms once with the randomly generated reference point
             _, pref_int_rvea = int_rvea.requests()
@@ -91,7 +91,7 @@ for gen in num_gen_per_iter:
             ref_dirs = get_reference_directions("das-dennis", n_obj, n_partitions=12)
 
             # ADM parameters
-            L = 15
+            L = 4
             D = 3
             all_rps = np.empty(shape=(L + D, n_obj), dtype="object")
 
@@ -136,7 +136,7 @@ for gen in num_gen_per_iter:
 
                 rp_transformer = Normalizer().fit(ref_point)
                 norm_rp = rp_transformer.transform(ref_point)
-                all_rps[i] = norm_rp
+                all_rps[i] = ref_point
 
                 rmetric = rm.RMetric(
                     problemR, norm_rp, pf=problemR.pareto_front(ref_dirs)
@@ -166,14 +166,14 @@ for gen in num_gen_per_iter:
                 ]
 
                 data = data.append(data_row, ignore_index=1)
-                fig = visualize_3D_front_rp(int_rvea.population.objectives, response)
+                """fig = visualize_3D_front_rp(int_rvea.population.objectives, response)
                 fig.write_html(
                     f"./results/iRVEA/" f"iRVEA_{problem_name}_iteration_{i+1}.html"
                 )
                 fig = visualize_3D_front_rp(int_nsga.population.objectives, response)
                 fig.write_html(
                     f"./results/iNSGA/" f"iNSGA_{problem_name}_iteration_{i+1}.html"
-                )
+                )"""
 
             # Decision phase
             max_assigned_vector = gp.get_max_assigned_vector(base.assigned_vectors)
@@ -216,10 +216,10 @@ for gen in num_gen_per_iter:
 
                 rp_transformer = Normalizer().fit(ref_point)
                 norm_rp = rp_transformer.transform(ref_point)
-                all_rps[L + i] = norm_rp
+                all_rps[L + i] = ref_point
 
                 rmetric = rm.RMetric(
-                    problemR, norm_rp, pf=problemR.pareto_front(ref_dirs)
+                    problemR, norm_rp, delta=0.2, pf=problemR.pareto_front(ref_dirs)
                 )
 
                 # normalize solutions before sending r-metric
@@ -254,7 +254,7 @@ for gen in num_gen_per_iter:
                 fig.write_html(
                     f"./results/iNSGA/" f"iNSGA_{problem_name}_iteration_{L+i+1}.html"
                 )
-            fig_rp.add_trace(
+            """fig_rp.add_trace(
                 go.Scatter3d(
                     x=all_rps[:, 0],
                     y=all_rps[:, 1],
@@ -266,5 +266,5 @@ for gen in num_gen_per_iter:
             )
             fig_rp.write_html(f"./results/" f"RPs_{problem_name}_{gen}.html")
             fig = visualize_3D_front_rvs(base.normalized_front, reference_vectors)
-            fig.write_html(f"./results/" f"cf_{problem_name}_{gen}.html")
-data.to_csv("./results/data.csv", index=False)
+            fig.write_html(f"./results/" f"cf_{problem_name}_{gen}.html")"""
+data.to_csv("./results/results_many_objs_L4delta03_D3delta02.csv", index=False)
