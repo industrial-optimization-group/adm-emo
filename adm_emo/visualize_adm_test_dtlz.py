@@ -164,7 +164,7 @@ for gen in num_gen_per_iter:
                 ]
 
                 data = data.append(data_row, ignore_index=1)
-                fig = visualize_3D_front_rp(int_rvea.population.objectives, response)
+                """fig = visualize_3D_front_rp(int_rvea.population.objectives, response)
                 fig.write_html(
                     f"./results/decision_behaviour/iRVEA/"
                     f"iRVEA_{problem_name}_iteration_{i+1}.html"
@@ -173,7 +173,7 @@ for gen in num_gen_per_iter:
                 fig.write_html(
                     f"./results/decision_behaviour/iNSGA/"
                     f"iNSGA_{problem_name}_iteration_{i+1}.html"
-                )
+                )"""
 
             # Decision phase
             base = baseADM(cf, reference_vectors)
@@ -248,7 +248,7 @@ for gen in num_gen_per_iter:
                 ]
 
                 data = data.append(data_row, ignore_index=1)
-                fig = visualize_3D_front_rp(int_rvea.population.objectives, response)
+                """ fig = visualize_3D_front_rp(int_rvea.population.objectives, response)
                 fig.write_html(
                     f"./results/decision_behaviour/iRVEA/"
                     f"iRVEA_{problem_name}_iteration_{L+i+1}.html"
@@ -257,7 +257,7 @@ for gen in num_gen_per_iter:
                 fig.write_html(
                     f"./results/decision_behaviour/iNSGA/"
                     f"iNSGA_{problem_name}_iteration_{L+i+1}.html"
-                )
+                )"""
             fig_rp.add_trace(
                 go.Scatter3d(
                     x=all_rps[:, 0],
@@ -268,15 +268,9 @@ for gen in num_gen_per_iter:
                     marker_size=5,
                 )
             )
-            fig_rp.write_html(
-                f"./results/decision_behaviour/" f"RPs_{problem_name}_{gen}.html"
-            )
-            fig = visualize_3D_front_rvs(base.normalized_front, reference_vectors)
-            fig.write_html(
-                f"./results/decision_behaviour/" f"cf_{problem_name}_{gen}.html"
-            )
+            fig_rp.write_html(f"./results/decision/" f"RPs_{problem_name}_{gen}.html")
+            fig = visualize_3D_front_rvs(cf, reference_vectors)
+            fig.write_html(f"./results/decision/" f"cf_{problem_name}_{gen}.html")
             # print(all_rps)
-data.to_csv(
-    "./results/decision_behaviour/results_3objs_L20delta03_D0delta02.csv", index=False
-)
+data.to_csv("./results/decision/results_3objs_L0delta03_D20delta02.csv", index=False)
 
