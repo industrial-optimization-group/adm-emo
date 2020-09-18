@@ -36,7 +36,7 @@ def generateRP4learning(base: baseADM):
     distance_selected = sub_pop_fitness_magnitude[minidx]
 
     # Create the reference point
-    reference_point = distance_selected * base.vectors.values[min_assigned_vector[0]]
+    reference_point = distance_selected[0] * base.vectors.values[min_assigned_vector[0]]
     reference_point = np.squeeze(reference_point + ideal_cf)
     # reference_point = reference_point + ideal_cf
     return reference_point
@@ -64,10 +64,8 @@ def generateRP4decision(base: baseADM, max_assigned_vector):
     translated_cf = base.translated_front
 
     sub_population_index = np.atleast_1d(
-        np.squeeze(np.where(assigned_vectors == max_assigned_vector[0]))
-        # If there are multiple vectors which have the minimum number of solutions, first one's index is used
+        np.squeeze(np.where(assigned_vectors == max_assigned_vector))
     )
-    # Assigned solutions to the vector which has a minimum number of solutions
     sub_population_fitness = translated_cf[sub_population_index]
     # Distances of these solutions to the origin
     sub_pop_fitness_magnitude = np.sqrt(
@@ -78,7 +76,7 @@ def generateRP4decision(base: baseADM, max_assigned_vector):
     distance_selected = sub_pop_fitness_magnitude[minidx]
 
     # Create the reference point
-    reference_point = distance_selected * base.vectors.values[max_assigned_vector[0]]
+    reference_point = distance_selected[0] * base.vectors.values[max_assigned_vector]
     reference_point = np.squeeze(reference_point + ideal_cf)
     # reference_point = reference_point + ideal_cf
     return reference_point
