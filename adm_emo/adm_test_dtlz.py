@@ -23,7 +23,7 @@ n_objs = np.asarray([3, 4, 5, 6, 7, 8, 9])  # number of objectives
 K = 10
 n_vars = K + n_objs - 1  # number of variables
 
-num_gen_per_iter = [100]  # number of generations per iteration
+num_gen_per_iter = [50]  # number of generations per iteration
 
 algorithms = ["iRVEA", "iNSGAIII"]  # algorithms to be compared
 
@@ -176,7 +176,7 @@ for gen in num_gen_per_iter:
                 base = baseADM(cf, reference_vectors)
 
                 # generates the next reference point for the decision phase
-                response = gp.generateRP4decision(base, max_assigned_vector)
+                response = gp.generateRP4decision(base, max_assigned_vector[0])
 
                 data_row["reference_point"] = [
                     response,
@@ -228,4 +228,4 @@ for gen in num_gen_per_iter:
 
                 data = data.append(data_row, ignore_index=1)
 
-data.to_csv("./results/EMO2021/output21.csv", index=False)
+data.to_csv("./results/EMO2021/50_generations/output21.csv", index=False)
