@@ -1,3 +1,16 @@
+####################################################################
+# Title: R-metric implementation
+# Publication: Li, K., Deb, K., Yao, X.: R-metric: Evaluating the
+# performance of preference-basedevolutionary multiobjective optimization
+# using reference points. IEEE Transactions on Evolutionary Computation22(6),
+# 821–835 (2018).
+#
+# This implementation is adapted from the one in pymoo framework(https://pymoo.org/)
+# Source: https://github.com/msu-coinlab/pymoo/blob/master/pymoo/performance_indicator/rmetric.py
+# retrieved in September 2020.
+#####################################################################
+
+
 import numpy as np
 from scipy.spatial.distance import cdist
 
